@@ -15,7 +15,7 @@ def plot_pretty(dpi=175,fontsize=9):
     plt.rc('lines', dotted_pattern = [2., 2.])
     #if you don't have LaTeX installed on your laptop and this statement 
     # generates error, comment it out
-    plt.rc('text', usetex=True)
+    #plt.rc('text', usetex=True)
 
     return
 
@@ -56,3 +56,23 @@ def plot_line_points(x, y, figsize=6, xlabel=' ', ylabel=' ', col= 'darkslateblu
         plt.savefig(figsave, bbox_inches='tight')
 
     plt.show()
+    
+from matplotlib import cm
+def plot_color_map(x, y, data, xlim=[0.,1], ylim=[0.,1.], 
+                   xlabel = ' ', ylabel = ' ', cmap='winter', colorbar=None, 
+                   plot_title=None, figsize=3.0, figsave=None):
+    fig, ax = plt.subplots(figsize=(figsize,figsize))
+    ax.axis([xlim[0], xlim[1], ylim[0], ylim[1]])
+
+    plt.xlabel(xlabel); plt.ylabel(ylabel)
+    cmap = cm.get_cmap(cmap)
+    im = ax.pcolormesh(x, y, data, cmap=cmap, rasterized=False)
+    if colorbar: 
+        fig.colorbar(im, ax=ax)
+    if plot_title:
+        plt.title(plot_title, fontsize=3.*figsize)
+
+    if figsave:
+        plt.savefig(figsave, bbox_inches='tight')
+    plt.show()
+
