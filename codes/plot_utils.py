@@ -15,7 +15,7 @@ def plot_pretty(dpi=175,fontsize=9):
     plt.rc('lines', dotted_pattern = [2., 2.])
     #if you don't have LaTeX installed on your laptop and this statement 
     # generates error, comment it out
-    #plt.rc('text', usetex=True)
+    plt.rc('text', usetex=True)
 
     return
 
@@ -76,3 +76,23 @@ def plot_color_map(x, y, data, xlim=[0.,1], ylim=[0.,1.],
         plt.savefig(figsave, bbox_inches='tight')
     plt.show()
 
+
+def plot_histogram(data, bins=None, xlabel=' ', ylabel=' ', tickmarks = False, 
+                   plot_title=' ', figsize=3.):
+    "helper routine to histogram values in vector data"
+    fig = plt.figure(figsize=(figsize, figsize)) # define figure environment
+    plt.xlabel(xlabel); plt.ylabel(ylabel) # define axis labels
+    
+    # plot histogram of values in data
+    plt.hist(data, bins=bins, histtype='stepfilled', 
+             facecolor='slateblue', alpha=0.5)
+    
+    # this line is not stictly needed for plotting histogram
+    # it plots individual values in data as little ticks along x-axis
+    if tickmarks: 
+        plt.plot(data, np.full_like(data, data.max()*0.1), '|k', 
+                markeredgewidth=1)
+    if plot_title:
+        plt.title(plot_title, fontsize=3.*figsize)
+
+    plt.show()
