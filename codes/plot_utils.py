@@ -58,8 +58,10 @@ def plot_line_points(x, y, figsize=6, xlabel=' ', ylabel=' ', col= 'darkslateblu
     plt.show()
     
 from matplotlib import cm
+
 def plot_color_map(x, y, data, xlim=[0.,1], ylim=[0.,1.], 
                    xlabel = ' ', ylabel = ' ', cmap='winter', colorbar=None, 
+                   contours = False, levels = [], contcmap = 'winter',
                    plot_title=None, figsize=3.0, figsave=None):
     fig, ax = plt.subplots(figsize=(figsize,figsize))
     ax.axis([xlim[0], xlim[1], ylim[0], ylim[1]])
@@ -67,6 +69,8 @@ def plot_color_map(x, y, data, xlim=[0.,1], ylim=[0.,1.],
     plt.xlabel(xlabel); plt.ylabel(ylabel)
     cmap = cm.get_cmap(cmap)
     im = ax.pcolormesh(x, y, data, cmap=cmap, rasterized=False)
+    if contours:
+        ax.contour(x, y, data, levels=levels, cmap=contcmap)
     if colorbar: 
         fig.colorbar(im, ax=ax)
     if plot_title:
