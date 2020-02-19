@@ -240,3 +240,25 @@ def knuth_bin_width(data, return_bins=False):
     else:
         return dx
 
+def shimazaki_shinomoto_rule(x, Nbmin=4, Nbmax=500):
+    """
+    Compute the number of bins for samples in a vector x using the 
+    Shimazaki and Shinomoto (2007) method
+    """
+    x_max = np.max(x)
+    x_min = np.min(x)
+    Nbins = np.arange(Nbmin, Nbmax) # vector of bin numbers
+    hb = (x_max - x_min) / Nbins    # bin size vector
+    C = np.empty_like(hb)
+
+    # computation of the cost function
+    for i, Nb in enumerate(Nbins): 
+        ni = np.histogram(x, bins=Nb)[0]
+        nbar = np.mean(ni) # mean of counts in bins
+        v = np.var(ni)  # biased variance estimate of counts in bins
+        C[i] = (2. * nbar - v) / (hb[i]**2) # the cost function 
+
+    # optimal bin size: find index of the smallest C
+    imin = np.argmin(C)
+    Nb_best, h_best  = Nbins[imin], hb[imin]
+    return Nb_best, h_best     
