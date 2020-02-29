@@ -15,7 +15,7 @@ def plot_pretty(dpi=175,fontsize=9):
     plt.rc('lines', dotted_pattern = [2., 2.])
     #if you don't have LaTeX installed on your laptop and this statement 
     # generates error, comment it out
-    #plt.rc('text', usetex=True)
+    plt.rc('text', usetex=True)
 
     return
 
@@ -108,7 +108,7 @@ def conf_interval(x, pdf, conf_level):
     return np.sum(pdf[pdf > x])-conf_level
 
 def plot_2d_dist(x,y, xlim, ylim, nxbins, nybins, figsize=(5,5), 
-                cmin=1.e-4, cmax=1.0, 
+                cmin=1.e-4, cmax=1.0, smooth=None, 
                 log=False, weights=None, xlabel='x',ylabel='y', 
                 clevs=None, fig_setup=None, savefig=None):
     """
@@ -138,6 +138,10 @@ def plot_2d_dist(x,y, xlim, ylim, nxbins, nybins, figsize=(5,5),
              
     X,Y = np.meshgrid(xbins[:-1],ybins[:-1]) 
 
+    if smooth != None:
+        from scipy.signal import wiener
+        H = wiener(H, mysize=smooth)
+        
     H = H/np.sum(H)        
     Hmask = np.ma.masked_where(H==0,H)
     
