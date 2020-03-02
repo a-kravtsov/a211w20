@@ -15,7 +15,7 @@ def plot_pretty(dpi=175,fontsize=9):
     plt.rc('lines', dotted_pattern = [2., 2.])
     #if you don't have LaTeX installed on your laptop and this statement 
     # generates error, comment it out
-    plt.rc('text', usetex=True)
+    #plt.rc('text', usetex=True)
 
     return
 
@@ -165,3 +165,65 @@ def plot_2d_dist(x,y, xlim, ylim, nxbins, nybins, figsize=(5,5),
     if fig_setup is None:
         plt.show()
     return
+
+import itertools as it
+
+def triage(par, weights, parnames, figsize=[5,5], nbins = 30, figname=None, fontsize=8):
+    
+    npar = np.size(par[1,:])
+    
+    f, ax = plt.subplots(npar, npar, figsize=(figsize), sharex='col')
+    # f, ax = plt.subplots(figsize=(10,10), sharex='col', sharey='row')
+    plt.rc('font',size=fontsize)
+    for h,v in it.product(range(npar), range(npar)) :
+        if v < h :
+            hvals, xedges, yedges = np.histogram2d(par[:,v], par[:,h], weights=weights[:,0], bins = nbins)
+            hvals = np.rot90(hvals)
+            hvals = np.flipud(hvals)
+             
+            Hmasked = np.ma.masked_where(hvals==0, hvals)
+            hvals = hvals / np.sum(hvals)        
+             
+            X,Y = np.meshgrid(xedges,yedges) 
+             
+            sig1 = opt.brentq( conf_interval, 0., 1., args=(hvals,0.683) )
+            sig2 = opt.brentq( conf_interval, 0., 1., args=(hvals,0.953) )
+            sig3 = opt.brentq( conf_interval, 0., 1., args=(hvals,0.997) )
+            lvls = [sig3, sig2, sig1]   
+                     
+            ax[h,v].pcolor(X, Y, (Hmasked), cmap=plt.cm.BuPu, norm = LogNorm())
+            ax[h,v].contour(hvals, linewidths=(1.0, 0.5, 0.25), colors='lavender', levels = lvls, norm = LogNorm(), extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]])
+            if v > 0:
+                ax[h,v].get_yaxis().set_ticklabels([])
+        elif v == h :
+            ax[h,v].hist(par[:,h],bins = nbins,color='mediumslateblue',histtype='step',lw=1.5)
+            ax[h,v].yaxis.tick_right()
+            ax[h,v].get_yticklabels()
+            
+            conf_lims = np.percentile(par[:,h], [2.5, 16, 50, 84, 97.5])
+            hmean = np.mean(par[:,h])
+            hstd = np.std(par[:,h])
+            
+            print(parnames[h] + '\t%.3f +- %.3f'%(hmean, hstd)+ '; [2.5, 16, 50, 84, 97.5] %-tiles: ' + ' '.join(['%.3f'%(p) for p in conf_lims]))
+            
+            #textable.write( parnames[h] + ' & %.4f & %.4f'%(hmean, hstd)+ ' & ' + ' & '.join(['%.4f'%(p) for p in conf_lims]) + '\\\\\n')
+            
+            #for i in range(len(conf_lims)) :   ax[h,v].axvline(conf_lims[i], color='lavender', lw = (3. - np.abs(2-i))/2. )
+            
+        else :
+            ax[h,v].axis('off')
+             
+        if v == 0:
+            ax[h,v].set_ylabel(parnames[h])
+            ax[h,v].get_yaxis().set_label_coords(-0.35,0.5)
+        if h == npar-1:
+            ax[h,v].set_xlabel(parnames[v])
+            ax[h,v].get_xaxis().set_label_coords(0.5,-0.35)
+            labels = ax[h,v].get_xticklabels()
+            for label in labels: 
+                label.set_rotation(90) 
+         
+         
+    plt.tight_layout(pad=1.5, w_pad=-4, h_pad=-0.6)
+    if figname:
+        plt.savefig(figname, bbox_inches='tight')
