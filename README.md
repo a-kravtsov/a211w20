@@ -2,4 +2,4 @@
 
 Instructor: Andrey Kravtsov
 
-TAs: Dimitrios Tanoglidis, Georgios Zacharegkas
+TAs: Dimitrios Tanoglidis
