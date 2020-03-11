@@ -227,3 +227,81 @@ def triage(par, weights, parnames, figsize=[5,5], nbins = 30, figname=None, font
     plt.tight_layout(pad=1.5, w_pad=-4, h_pad=-0.6)
     if figname:
         plt.savefig(figname, bbox_inches='tight')
+
+def distance_matrix(A, B):
+    '''
+    Given two sets of data points, computes the Euclidean distances
+    between each pair of points.
+
+    *A*: (N, D) array of data points
+    *B*: (M, D) array of data points
+
+    Returns: (N, M) array of Euclidean distances between points.
+    '''
+    Na, D = A.shape
+    Nb, Db = B.shape
+    assert(Db == D)
+    dists = np.zeros((Na,Nb))
+    for a in range(Na):
+        dists[a,:] = np.sqrt(np.sum((A[a] - B)**2, axis=1))
+    return dists
+
+# Copied and very slightly modified from scipy
+def voronoi_plot_2d(vor, ax=None):
+    #ptp_bound = vor.points.ptp(axis=0)
+    ptp_bound = np.array([1000,1000])
+    
+    center = vor.points.mean(axis=0)
+    for pointidx, simplex in zip(vor.ridge_points, vor.ridge_vertices):
+        simplex = np.asarray(simplex)
+        if np.any(simplex < 0):
+            i = simplex[simplex >= 0][0]  # finite end Voronoi vertex
+
+            t = vor.points[pointidx[1]] - vor.points[pointidx[0]]  # tangent
+            t /= np.linalg.norm(t)
+            n = np.array([-t[1], t[0]])  # normal
+
+            midpoint = vor.points[pointidx].mean(axis=0)
+            direction = np.sign(np.dot(midpoint - center, n)) * n
+            far_point = vor.vertices[i] + direction * ptp_bound.max()
+
+            ax.plot([vor.vertices[i,0], far_point[0]],
+                    [vor.vertices[i,1], far_point[1]], 'k--')
+
+colors = 'brgmck'
+
+def plot_kmeans(i, X, K, centroids, newcentroids, nearest, show=True):
+    import pylab as plt
+    plt.clf()
+    plotsymbol = 'o'
+    if nearest is None:
+        distances = distance_matrix(X, centroids)
+        nearest = np.argmin(distances, axis=1)
+        
+    for i,c in enumerate(centroids):
+        I = np.flatnonzero(nearest == i)
+        plt.plot(X[I,0], X[I,1], plotsymbol, mfc=colors[i], mec='k')
+        
+    ax = plt.axis()
+    for i,(oc,nc) in enumerate(zip(centroids, newcentroids)):
+        plt.plot(oc[0], oc[1], 'kx', mew=2, ms=10)
+        plt.plot([oc[0], nc[0]], [oc[1], nc[1]], '-', color=colors[i])
+        plt.plot(nc[0], nc[1], 'x', mew=2, ms=15, color=colors[i])
+        
+    vor = None
+    if K > 2:
+        from scipy.spatial import Voronoi #, voronoi_plot_2d
+        vor = Voronoi(centroids)
+        voronoi_plot_2d(vor, plt.gca())
+    else:
+        mid = np.mean(centroids, axis=0)
+        x0,y0 = centroids[0]
+        x1,y1 = centroids[1]
+        slope = (y1-y0)/(x1-x0)
+        slope = -1./slope
+        run = 1000.
+        plt.plot([mid[0] - run, mid[0] + run],
+                 [mid[1] - run*slope, mid[1] + run*slope], 'k--')
+    plt.axis(ax)
+    if show:
+        plt.show()
