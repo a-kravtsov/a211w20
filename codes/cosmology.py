@@ -114,7 +114,7 @@ def Rmm(a, b, func, m, **kwargs):
           
     return Rkm[m,m], Rkm[m,m-1] # return the desired approximation and best one of previous order 
 
-def romberg(func, a, b, rtol = 1.e-4, mmax = 8, verbose = False, **kwargs):
+def romberg_ak(func, a, b, rtol = 1.e-4, mmax = 8, verbose = False, **kwargs):
     """
     Romberg integration scheme to evaluate
             int_a^b func(x)dx 
@@ -204,7 +204,7 @@ def dcom(z, Om0, OmL, ninter=20):
         if np.abs(a-1.0) < 1.e-10:
             dc = 0.
         else:
-            dc = romberg(d_func, a, 1., rtol = 1.e-10, mmax = 16, verbose = False, **kwargs)[0]
+            dc = romberg_ak(d_func, a, 1., rtol = 1.e-10, mmax = 16, verbose = False, **kwargs)[0]
     elif nz > 1:
         dc = np.zeros(nz)
         if nz <= ninter:
@@ -212,7 +212,7 @@ def dcom(z, Om0, OmL, ninter=20):
                 if np.abs(ad-1.0) < 1.e-10:
                     dc[i] = 0.
                 else:
-                    dc[i] = romberg(d_func, ad, 1., rtol = 1.e-10, mmax = 16, verbose = False, **kwargs)[0]
+                    dc[i] = romberg_ak(d_func, ad, 1., rtol = 1.e-10, mmax = 16, verbose = False, **kwargs)[0]
         else:
             zmin = np.min(z); zmax = np.max(z)
             zi = np.linspace(zmin, zmax, num=ninter)
@@ -222,7 +222,7 @@ def dcom(z, Om0, OmL, ninter=20):
                 if np.abs(aid-1.0) < 1.e-10:
                     fi[i] = 0.
                 else:
-                    fi[i] = romberg(d_func, aid, 1., rtol = 1.e-10, mmax = 16, verbose = False, **kwargs)[0]
+                    fi[i] = romberg_ak(d_func, aid, 1., rtol = 1.e-10, mmax = 16, verbose = False, **kwargs)[0]
             dsp = UnivariateSpline(zi, fi, s=0.)
             dc = dsp(z)
     return dc
